@@ -1,0 +1,126 @@
+/* ============ GENERAL ============ */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* ============ PRODUCT CARD ============ */
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.product-card .card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.product-card .card-body {
+    padding: 15px;
+}
+
+.product-card .card-title {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    height: 2.8em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* ============ NAVBAR ============ */
+.navbar-brand {
+    font-size: 1.4rem;
+}
+
+/* ============ ADMIN ============ */
+.admin-sidebar {
+    min-height: calc(100vh - 56px);
+    background: #212529;
+}
+
+.admin-sidebar .nav-link {
+    color: #adb5bd;
+    padding: 10px 20px;
+    border-left: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.admin-sidebar .nav-link:hover,
+.admin-sidebar .nav-link.active {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    border-left-color: #28a745;
+}
+
+.admin-sidebar .nav-link i {
+    width: 25px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.admin-sidebar .sidebar-heading {
+    color: #6c757d;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 15px 20px 5px;
+}
+
+/* ============ DASHBOARD CARDS ============ */
+.dashboard-card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.3s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+    .product-card .card-title {
+        font-size: 0.85rem;
+    }
+}
+
+/* ============ BADGE ============ */
+.badge {
+    font-size: 0.8rem;
+}
+
+/* ============ BREADCRUMB ============ */
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+}
+
+/* ============ TABLE ============ */
+.table th {
+    white-space: nowrap;
+}
+
+/* ============ FOOTER ============ */
+footer a {
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #fff !important;
+}
