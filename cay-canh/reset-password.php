@@ -51,8 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valid_token) {
     
     if (empty($errors)) {
         // Update password and clear reset token
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?");
-        $stmt->execute([md5($password), $user['id']]);
+        $stmt->execute([$hashed_password, $user['id']]);
         
         $message = 'Mật khẩu đã được đặt lại thành công! Bạn có thể đăng nhập ngay bây giờ.';
         $message_type = 'success';

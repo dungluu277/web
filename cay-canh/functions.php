@@ -35,75 +35,93 @@ function getCurrentUser($pdo) {
 // ============ EMAIL & PASSWORD RESET ============
 
 function sendPasswordResetEmail($email, $reset_token) {
-    global $_SERVER;
+    require_once __DIR__ . '/vendor/PHPMailer/src/PHPMailer.php';
+    require_once __DIR__ . '/vendor/PHPMailer/src/SMTP.php';
+    require_once __DIR__ . '/vendor/PHPMailer/src/Exception.php';
     
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-    $host = $_SERVER['HTTP_HOST'];
-    $reset_url = $protocol . "://" . $host . "/cay-canh/reset-password.php?token=" . $reset_token;
+    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
     
-    $subject = "Đặt lại mật khẩu - " . SITE_NAME;
-    
-    $message = "
-    <html>
-    <head>
-        <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #28a745; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-            .content { background: #f9f9f9; padding: 20px; }
-            .button-container { text-align: center; padding: 20px 0; }
-            .button { display: inline-block; background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-            .footer { background: #f0f0f0; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px; }
-            .warning { color: #e74c3c; font-size: 12px; }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <h1>Đặt lại mật khẩu</h1>
-            </div>
-            <div class='content'>
-                <p>Chào bạn,</p>
-                <p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Nhấp vào nút bên dưới để đặt lại mật khẩu của bạn:</p>
-                
-                <div class='button-container'>
-                    <a href='" . htmlspecialchars($reset_url) . "' class='button'>Đặt lại mật khẩu</a>
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host = SMTP_HOST;
+        $mail->SMTPAuth = true;
+        $mail->Username = SMTP_USER;
+        $mail->Password = SMTP_PASS;
+        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = SMTP_PORT;
+        $mail->CharSet = 'UTF-8';
+        
+        // Recipients
+        $mail->setFrom(SMTP_FROM, SITE_NAME);
+        $mail->addAddress($email);
+        
+        // Content
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+        $host = $_SERVER['HTTP_HOST'];
+        $reset_url = $protocol . "://" . $host . "/cay-canh/reset-password.php?token=" . $reset_token;
+        
+        $mail->isHTML(true);
+        $mail->Subject = "Đặt lại mật khẩu - " . SITE_NAME;
+        $mail->Body = "
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: #28a745; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+                .content { background: #f9f9f9; padding: 20px; }
+                .button-container { text-align: center; padding: 20px 0; }
+                .button { display: inline-block; background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+                .footer { background: #f0f0f0; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px; }
+                .warning { color: #e74c3c; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1>Đặt lại mật khẩu</h1>
                 </div>
-                
-                <p>Hoặc sao chép liên kết này vào trình duyệt của bạn:</p>
-                <p style='word-break: break-all;'>" . htmlspecialchars($reset_url) . "</p>
-                
-                <p class='warning'><strong>⚠️ Lưu ý:</strong> Liên kết này sẽ hết hạn sau 24 giờ.</p>
-                <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+                <div class='content'>
+                    <p>Chào bạn,</p>
+                    <p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Nhấp vào nút bên dưới để đặt lại mật khẩu của bạn:</p>
+                    
+                    <div class='button-container'>
+                        <a href='" . htmlspecialchars($reset_url) . "' class='button'>Đặt lại mật khẩu</a>
+                    </div>
+                    
+                    <p>Hoặc sao chép liên kết này vào trình duyệt của bạn:</p>
+                    <p style='word-break: break-all;'>" . htmlspecialchars($reset_url) . "</p>
+                    
+                    <p class='warning'><strong>⚠️ Lưu ý:</strong> Liên kết này sẽ hết hạn sau 24 giờ.</p>
+                    <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+                </div>
+                <div class='footer'>
+                    <p>&copy; " . date('Y') . " " . SITE_NAME . ". All rights reserved.</p>
+                </div>
             </div>
-            <div class='footer'>
-                <p>&copy; " . date('Y') . " " . SITE_NAME . ". All rights reserved.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    ";
-    
-    $headers = "MIME-Version: 1.0" . "\r\n";
-    $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-    $headers .= "From: noreply@" . $_SERVER['HTTP_HOST'] . "\r\n";
-    
-    // Try to send email (suppress warning if SMTP not configured)
-    $result = @mail($email, $subject, $message, $headers);
-    
-    // Log email to file for debugging/testing
-    $log_file = __DIR__ . '/logs/email_log.txt';
-    @mkdir(dirname($log_file), 0755, true);
-    
-    $log_content = "[" . date('Y-m-d H:i:s') . "] \n";
-    $log_content .= "To: $email\n";
-    $log_content .= "Subject: $subject\n";
-    $log_content .= "Reset URL: $reset_url\n";
-    $log_content .= "---\n\n";
-    
-    @file_put_contents($log_file, $log_content, FILE_APPEND);
-    
-    return true; // Return true regardless (email logged for testing)
+        </body>
+        </html>
+        ";
+        
+        $mail->send();
+        
+        // Log success
+        $log_file = __DIR__ . '/logs/email_log.txt';
+        @mkdir(dirname($log_file), 0755, true);
+        $log_content = "[" . date('Y-m-d H:i:s') . "] SUCCESS: Password reset email sent to $email\n";
+        file_put_contents($log_file, $log_content, FILE_APPEND);
+        
+        return true;
+    } catch (Exception $e) {
+        // Log error
+        $log_file = __DIR__ . '/logs/email_log.txt';
+        @mkdir(dirname($log_file), 0755, true);
+        $log_content = "[" . date('Y-m-d H:i:s') . "] ERROR: Failed to send password reset email to $email - " . $mail->ErrorInfo . "\n";
+        file_put_contents($log_file, $log_content, FILE_APPEND);
+        
+        return false;
+    }
 }
 
 // ============ PRODUCT & PRICE ============

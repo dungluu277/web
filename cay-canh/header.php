@@ -66,6 +66,7 @@ $_categories_nav = $pdo->query("SELECT * FROM categories ORDER BY CASE WHEN name
                     <button class="btn btn-outline-success btn-sm" type="submit"><i class="fas fa-search"></i></button>
                 </form>
                 <!-- Cart -->
+                <?php if (!isset($hide_cart) || !$hide_cart): ?>
                 <a href="cart.php" class="btn btn-outline-light position-relative">
                     <i class="fas fa-shopping-cart"></i> Giỏ hàng
                     <?php if ($_cart_count > 0): ?>
@@ -74,6 +75,7 @@ $_categories_nav = $pdo->query("SELECT * FROM categories ORDER BY CASE WHEN name
                     </span>
                     <?php endif; ?>
                 </a>
+                <?php endif; ?>
             </div>
         </div>
     </nav>

@@ -64,6 +64,9 @@ include 'header.php';
         
         <table class="table table-bordered mt-3">
             <tr><th width="150">Đơn vị tính</th><td><?= clean($product['unit']) ?></td></tr>
+            <?php if (!empty($product['size'])): ?>
+            <tr><th>Kích thước</th><td><?= clean($product['size']) ?></td></tr>
+            <?php endif; ?>
             <tr>
                 <th>Tình trạng</th>
                 <td>
@@ -90,7 +93,11 @@ include 'header.php';
 
         <div class="mt-4">
             <h5>Mô tả sản phẩm</h5>
-            <p><?= nl2br(clean($product['description'])) ?></p>
+            <div class="card">
+                <div class="card-body">
+                    <p><?= nl2br(clean($product['description'])) ?></p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

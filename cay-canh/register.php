@@ -44,8 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if (empty($errors)) {
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("INSERT INTO users (username, password, fullname, email, phone, address, district, city, role, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'customer', 'active')");
-        $stmt->execute([$username, md5($password), $fullname, $email, $phone, $address, $district, $city]);
+        $stmt->execute([$username, $hashed_password, $fullname, $email, $phone, $address, $district, $city]);
         
         setFlash('success', 'Đăng ký thành công! Vui lòng đăng nhập.');
         header('Location: login.php');
@@ -53,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$hide_cart = true;
 include 'header.php';
 ?>
 

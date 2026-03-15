@@ -9,6 +9,7 @@ if (isLoggedIn()) {
 
 $error = '';
 $redirect = $_GET['redirect'] ?? '';
+$hide_cart = true;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
@@ -18,11 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($password)) {
         $error = 'Vui lòng nhập đầy đủ thông tin';
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND password = ? AND role = 'customer'");
-        $stmt->execute([$username, md5($password)]);
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND role = 'customer'");
+        $stmt->execute([$username]);
         $user = $stmt->fetch();
         
-        if (!$user) {
+        if (!$user || !password_verify($password, $user['password'])) {
             $error = 'Tên đăng nhập hoặc mật khẩu không đúng';
         } elseif ($user['status'] === 'locked') {
             $error = 'Tài khoản của bạn đã bị khóa';
