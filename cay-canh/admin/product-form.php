@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'name' => trim($_POST['name']),
         'description' => trim($_POST['description']),
         'unit' => trim($_POST['unit']),
+        'size' => trim($_POST['size']),
         'profit_margin' => floatval($_POST['profit_margin']),
         'status' => $_POST['status'] ?? 'active',
     ];
@@ -53,15 +54,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         if ($id > 0) {
             // Update
-            $stmt = $pdo->prepare("UPDATE products SET category_id=?, code=?, name=?, description=?, unit=?, image=?, profit_margin=?, status=? WHERE id=?");
-            $stmt->execute([$data['category_id'], $data['code'], $data['name'], $data['description'], $data['unit'], $image, $data['profit_margin'], $data['status'], $id]);
+            $stmt = $pdo->prepare("UPDATE products SET category_id=?, code=?, name=?, description=?, unit=?, size=?, image=?, profit_margin=?, status=? WHERE id=?");
+            $stmt->execute([$data['category_id'], $data['code'], $data['name'], $data['description'], $data['unit'], $data['size'], $image, $data['profit_margin'], $data['status'], $id]);
             setFlash('success', 'Cập nhật sản phẩm thành công');
         } else {
             // Insert
             $stock = max(0, intval($_POST['stock'] ?? 0));
             $import_price = max(0, floatval($_POST['import_price'] ?? 0));
-            $stmt = $pdo->prepare("INSERT INTO products (category_id, code, name, description, unit, image, profit_margin, import_price, stock, status) VALUES (?,?,?,?,?,?,?,?,?,?)");
-            $stmt->execute([$data['category_id'], $data['code'], $data['name'], $data['description'], $data['unit'], $image, $data['profit_margin'], $import_price, $stock, $data['status']]);
+            $stmt = $pdo->prepare("INSERT INTO products (category_id, code, name, description, unit, size, image, profit_margin, import_price, stock, status) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+            $stmt->execute([$data['category_id'], $data['code'], $data['name'], $data['description'], $data['unit'], $data['size'], $image, $data['profit_margin'], $import_price, $stock, $data['status']]);
             setFlash('success', 'Thêm sản phẩm thành công');
         }
         header('Location: products.php');
@@ -109,6 +110,10 @@ include 'header.php';
                 <div class="col-md-3">
                     <label class="form-label">Đơn vị tính</label>
                     <input type="text" name="unit" class="form-control" value="<?= htmlspecialchars($product['unit'] ?? $_POST['unit'] ?? 'Chậu') ?>">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Kích thước</label>
+                    <input type="text" name="size" class="form-control" value="<?= htmlspecialchars($product['size'] ?? $_POST['size'] ?? '') ?>" placeholder="Ví dụ: 20cm x 15cm">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Tỉ lệ lợi nhuận (%)</label>

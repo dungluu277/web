@@ -13,11 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND password = ? AND role = 'admin'");
-    $stmt->execute([$username, md5($password)]);
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND role = 'admin'");
+    $stmt->execute([$username]);
     $admin = $stmt->fetch();
     
-    if ($admin && $admin['status'] === 'active') {
+    if ($admin && password_verify($password, $admin['password']) && $admin['status'] === 'active') {
         $_SESSION['admin_id'] = $admin['id'];
         $_SESSION['admin_name'] = $admin['fullname'];
         $_SESSION['admin_username'] = $admin['username'];
