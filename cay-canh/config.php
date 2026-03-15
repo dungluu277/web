@@ -12,6 +12,13 @@ define('SITE_NAME', 'Cây Cảnh Xanh');
 define('ITEMS_PER_PAGE', 8);
 define('UPLOAD_DIR', __DIR__ . '/assets/uploads/');
 
+// Email configuration
+define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_PORT', 587);
+define('SMTP_USER', 'hauthanhnguyenxuan2006@gmail.com'); // Thay bằng email thật
+define('SMTP_PASS', 'your-app-password'); // Thay bằng app password
+define('SMTP_FROM', 'noreply@caycanhxanh.com');
+
 // Database connection
 try {
     $pdo = new PDO(
