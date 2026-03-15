@@ -7,6 +7,11 @@ if (!isset($_SESSION['admin_id'])) {
     exit;
 }
 
+// Lấy thông tin đầy đủ của admin
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->execute([$_SESSION['admin_id']]);
+$admin_info = $stmt->fetch();
+
 // Get current page
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
@@ -25,7 +30,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <nav class="navbar navbar-dark bg-dark px-3">
         <a class="navbar-brand" href="index.php"><i class="fas fa-leaf text-success"></i> <?= SITE_NAME ?> - Admin</a>
         <div class="d-flex align-items-center text-white">
-            <span class="me-3"><i class="fas fa-user"></i> <?= htmlspecialchars($_SESSION['admin_name']) ?></span>
+            <button class="btn btn-link text-white me-3" style="text-decoration:none;" data-bs-toggle="modal" data-bs-target="#adminInfoModal" title="Xem thông tin quản trị viên">
+                <i class="fas fa-user"></i> <span style="cursor:pointer;">Quản trị viên</span>
+            </button>
             <a href="logout.php" class="btn btn-outline-light btn-sm"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
         </div>
     </nav>

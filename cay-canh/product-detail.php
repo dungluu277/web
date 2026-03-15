@@ -54,7 +54,7 @@ include 'header.php';
 
 <div class="row">
     <div class="col-md-5">
-        <img src="<?= getProductImage($product['image']) ?>" class="img-fluid rounded shadow" alt="<?= clean($product['name']) ?>">
+        <img src="<?= getProductImage($product['image'], $product['name']) ?>" class="img-fluid rounded shadow" alt="<?= clean($product['name']) ?>">
     </div>
     <div class="col-md-7">
         <h2><?= clean($product['name']) ?></h2>
@@ -103,7 +103,7 @@ include 'header.php';
     <div class="col-6 col-md-3">
         <div class="card product-card h-100 shadow-sm">
             <a href="product-detail.php?id=<?= $r['id'] ?>">
-                <img src="<?= getProductImage($r['image']) ?>" class="card-img-top" style="height:180px;object-fit:cover;">
+                <img src="<?= getProductImage($r['image'], $r['name']) ?>" class="card-img-top" style="height:180px;object-fit:cover;">
             </a>
             <div class="card-body">
                 <h6><a href="product-detail.php?id=<?= $r['id'] ?>" class="text-decoration-none text-dark"><?= clean($r['name']) ?></a></h6>

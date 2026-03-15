@@ -19,7 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
     $address = trim($_POST['address'] ?? '');
-    $ward = trim($_POST['ward'] ?? '');
     $district = trim($_POST['district'] ?? '');
     $city = trim($_POST['city'] ?? '');
     
@@ -32,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!preg_match('/^[0-9]{10,11}$/', $phone)) $errors[] = 'Số điện thoại không hợp lệ';
     if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Email không hợp lệ';
     if (empty($address)) $errors[] = 'Địa chỉ không được để trống';
-    if (empty($ward)) $errors[] = 'Phường/Xã không được để trống';
     if (empty($district)) $errors[] = 'Quận/Huyện không được để trống';
     if (empty($city)) $errors[] = 'Tỉnh/Thành phố không được để trống';
     
@@ -46,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     if (empty($errors)) {
-        $stmt = $pdo->prepare("INSERT INTO users (username, password, fullname, email, phone, address, ward, district, city, role, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'customer', 'active')");
-        $stmt->execute([$username, md5($password), $fullname, $email, $phone, $address, $ward, $district, $city]);
+        $stmt = $pdo->prepare("INSERT INTO users (username, password, fullname, email, phone, address, district, city, role, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'customer', 'active')");
+        $stmt->execute([$username, md5($password), $fullname, $email, $phone, $address, $district, $city]);
         
         setFlash('success', 'Đăng ký thành công! Vui lòng đăng nhập.');
         header('Location: login.php');
@@ -105,17 +103,17 @@ include 'header.php';
                             <label class="form-label">Địa chỉ <span class="text-danger">*</span></label>
                             <input type="text" name="address" class="form-control" value="<?= clean($old['address'] ?? '') ?>" required placeholder="Số nhà, tên đường...">
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Phường/Xã <span class="text-danger">*</span></label>
-                            <input type="text" name="ward" class="form-control" value="<?= clean($old['ward'] ?? '') ?>" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Quận/Huyện <span class="text-danger">*</span></label>
-                            <input type="text" name="district" class="form-control" value="<?= clean($old['district'] ?? '') ?>" required>
-                        </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
-                            <input type="text" name="city" class="form-control" value="<?= clean($old['city'] ?? '') ?>" required>
+                            <select name="city" id="citySelect" class="form-select" required>
+                                <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Quận/Huyện <span class="text-danger">*</span></label>
+                            <select name="district" id="districtSelect" class="form-select" required>
+                                <option value="">-- Vui lòng chọn Tỉnh trước --</option>
+                            </select>
                         </div>
                     </div>
                     <div class="mt-4">
@@ -127,5 +125,47 @@ include 'header.php';
         </div>
     </div>
 </div>
+
+<script src="data/vietnam-addresses.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const citySelect = document.getElementById('citySelect');
+    const districtSelect = document.getElementById('districtSelect');
+    
+    // Populate cities
+    Object.keys(vietnamAddresses).sort().forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        citySelect.appendChild(option);
+    });
+    
+    // Handle city change
+    citySelect.addEventListener('change', function() {
+        districtSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+        
+        if (this.value && vietnamAddresses[this.value]) {
+            vietnamAddresses[this.value].forEach(district => {
+                const option = document.createElement('option');
+                option.value = district;
+                option.textContent = district;
+                districtSelect.appendChild(option);
+            });
+        }
+    });
+    
+    // Restore old values if form was submitted with error
+    const oldCity = "<?= clean($old['city'] ?? '') ?>";
+    const oldDistrict = "<?= clean($old['district'] ?? '') ?>";
+    
+    if (oldCity) {
+        citySelect.value = oldCity;
+        citySelect.dispatchEvent(new Event('change'));
+        setTimeout(() => {
+            districtSelect.value = oldDistrict;
+        }, 100);
+    }
+});
+</script>
 
 <?php include 'footer.php'; ?>

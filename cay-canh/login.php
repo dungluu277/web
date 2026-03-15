@@ -69,6 +69,9 @@ include 'header.php';
                     <button type="submit" class="btn btn-success w-100 btn-lg"><i class="fas fa-sign-in-alt"></i> Đăng nhập</button>
                 </form>
                 <hr>
+                <p class="text-center small">
+                    <a href="forgot-password.php" class="text-muted">Quên mật khẩu?</a>
+                </p>
                 <p class="text-center">Chưa có tài khoản? <a href="register.php">Đăng ký ngay</a></p>
             </div>
         </div>

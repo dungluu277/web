@@ -32,6 +32,80 @@ function getCurrentUser($pdo) {
     return $stmt->fetch();
 }
 
+// ============ EMAIL & PASSWORD RESET ============
+
+function sendPasswordResetEmail($email, $reset_token) {
+    global $_SERVER;
+    
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+    $host = $_SERVER['HTTP_HOST'];
+    $reset_url = $protocol . "://" . $host . "/cay-canh/reset-password.php?token=" . $reset_token;
+    
+    $subject = "Đặt lại mật khẩu - " . SITE_NAME;
+    
+    $message = "
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #28a745; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+            .content { background: #f9f9f9; padding: 20px; }
+            .button-container { text-align: center; padding: 20px 0; }
+            .button { display: inline-block; background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+            .footer { background: #f0f0f0; padding: 15px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 5px 5px; }
+            .warning { color: #e74c3c; font-size: 12px; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h1>Đặt lại mật khẩu</h1>
+            </div>
+            <div class='content'>
+                <p>Chào bạn,</p>
+                <p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Nhấp vào nút bên dưới để đặt lại mật khẩu của bạn:</p>
+                
+                <div class='button-container'>
+                    <a href='" . htmlspecialchars($reset_url) . "' class='button'>Đặt lại mật khẩu</a>
+                </div>
+                
+                <p>Hoặc sao chép liên kết này vào trình duyệt của bạn:</p>
+                <p style='word-break: break-all;'>" . htmlspecialchars($reset_url) . "</p>
+                
+                <p class='warning'><strong>⚠️ Lưu ý:</strong> Liên kết này sẽ hết hạn sau 24 giờ.</p>
+                <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+            </div>
+            <div class='footer'>
+                <p>&copy; " . date('Y') . " " . SITE_NAME . ". All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    ";
+    
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
+    $headers .= "From: noreply@" . $_SERVER['HTTP_HOST'] . "\r\n";
+    
+    // Try to send email (suppress warning if SMTP not configured)
+    $result = @mail($email, $subject, $message, $headers);
+    
+    // Log email to file for debugging/testing
+    $log_file = __DIR__ . '/logs/email_log.txt';
+    @mkdir(dirname($log_file), 0755, true);
+    
+    $log_content = "[" . date('Y-m-d H:i:s') . "] \n";
+    $log_content .= "To: $email\n";
+    $log_content .= "Subject: $subject\n";
+    $log_content .= "Reset URL: $reset_url\n";
+    $log_content .= "---\n\n";
+    
+    @file_put_contents($log_file, $log_content, FILE_APPEND);
+    
+    return true; // Return true regardless (email logged for testing)
+}
+
 // ============ PRODUCT & PRICE ============
 
 function getSellingPrice($import_price, $profit_margin) {
@@ -154,11 +228,32 @@ function uploadImage($file, $dir = null) {
     return false;
 }
 
-function getProductImage($image) {
-    if ($image && file_exists(UPLOAD_DIR . $image)) {
-        return 'assets/uploads/' . $image;
+function getProductImage($image, $product_name = '') {
+    // 1. Kiểm tra ảnh từ folder images cục bộ
+    if (!empty($product_name)) {
+        // Thử .jpg trước
+        $local_image_jpg = __DIR__ . '/images/' . trim($product_name) . '.jpg';
+        if (file_exists($local_image_jpg)) {
+            $timestamp = filemtime($local_image_jpg);
+            return 'images/' . trim($product_name) . '.jpg?v=' . $timestamp;
+        }
+        
+        // Thử .png
+        $local_image_png = __DIR__ . '/images/' . trim($product_name) . '.png';
+        if (file_exists($local_image_png)) {
+            $timestamp = filemtime($local_image_png);
+            return 'images/' . trim($product_name) . '.png?v=' . $timestamp;
+        }
     }
-    return 'https://via.placeholder.com/300x300?text=Cây+Cảnh';
+    
+    // 2. Nếu có file upload từ admin, dùng file đó
+    if ($image && file_exists(UPLOAD_DIR . $image)) {
+        $timestamp = filemtime(UPLOAD_DIR . $image);
+        return 'assets/uploads/' . $image . '?v=' . $timestamp;
+    }
+    
+    // 3. Fallback: ảnh placeholder generic
+    return 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22%23888%22%3ENo Image%3C/text%3E%3C/svg%3E';
 }
 
 // ============ SANITIZE ============

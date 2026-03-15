@@ -61,7 +61,7 @@ include 'header.php';
                 ?>
                 <tr>
                     <td width="80">
-                        <img src="<?= getProductImage($item['image']) ?>" width="60" height="60" class="rounded" style="object-fit:cover;">
+                        <img src="<?= getProductImage($item['image'], $item['name']) ?>" width="60" height="60" class="rounded" style="object-fit:cover;">
                     </td>
                     <td>
                         <a href="product-detail.php?id=<?= $item['product_id'] ?>" class="text-decoration-none"><?= clean($item['name']) ?></a>

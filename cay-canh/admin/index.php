@@ -16,7 +16,7 @@ $recent_orders = $pdo->query("SELECT o.*, u.fullname FROM orders o JOIN users u 
 include 'header.php';
 ?>
 
-<h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+<h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Trang chủ</h2>
 
 <div class="row g-3 mb-4">
     <div class="col-md-3">

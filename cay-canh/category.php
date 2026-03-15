@@ -50,7 +50,7 @@ include 'header.php';
     <div class="col-6 col-md-3">
         <div class="card product-card h-100 shadow-sm">
             <a href="product-detail.php?id=<?= $p['id'] ?>">
-                <img src="<?= getProductImage($p['image']) ?>" class="card-img-top" alt="<?= clean($p['name']) ?>" style="height:200px;object-fit:cover;">
+                <img src="<?= getProductImage($p['image'], $p['name']) ?>" class="card-img-top" alt="<?= clean($p['name']) ?>" style="height:200px;object-fit:cover;">
             </a>
             <div class="card-body d-flex flex-column">
                 <h6 class="card-title">

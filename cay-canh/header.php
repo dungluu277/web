@@ -3,7 +3,7 @@ if (!isset($pdo)) {
     require_once __DIR__ . '/functions.php';
 }
 $_cart_count = getCartCount($pdo);
-$_categories_nav = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchAll();
+$_categories_nav = $pdo->query("SELECT * FROM categories ORDER BY CASE WHEN name = 'Cây nội thất' THEN 0 WHEN name = 'Cây ngoài thất' THEN 1 WHEN name = 'Cây bonsai' THEN 2 WHEN name = 'Cây phong thủy' THEN 3 WHEN name = 'Sen đá & Xương rồng' THEN 4 WHEN name = 'Phụ kiện chậu cây' THEN 5 ELSE 6 END")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -24,6 +24,7 @@ $_categories_nav = $pdo->query("SELECT * FROM categories ORDER BY name")->fetchA
                 <?php if (isLoggedIn()): ?>
                     <small>
                         <i class="fas fa-user"></i> Xin chào, <strong><?= clean($_SESSION['user_fullname']) ?></strong>
+                        | <a href="profile.php" class="text-white">Thông tin cá nhân</a>
                         | <a href="order-history.php" class="text-white">Đơn hàng</a>
                         | <a href="logout.php" class="text-white">Đăng xuất</a>
                     </small>

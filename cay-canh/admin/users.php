@@ -19,33 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    if ($action === 'reset_password' && $user_id > 0) {
-        $new_pass = md5('123456');
-        $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-        $stmt->execute([$new_pass, $user_id]);
-        setFlash('success', 'Đã khởi tạo mật khẩu về "123456"');
-    }
-    
-    if ($action === 'add') {
-        $username = trim($_POST['username'] ?? '');
-        $fullname = trim($_POST['fullname'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-        $role = $_POST['role'] ?? 'customer';
-        
-        if ($username && $fullname) {
-            $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
-            $stmt->execute([$username]);
-            if (!$stmt->fetch()) {
-                $stmt = $pdo->prepare("INSERT INTO users (username, password, fullname, email, phone, role, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
-                $stmt->execute([$username, md5('123456'), $fullname, $email, $phone, $role]);
-                setFlash('success', 'Thêm tài khoản thành công (mật khẩu mặc định: 123456)');
-            } else {
-                setFlash('danger', 'Tên đăng nhập đã tồn tại');
-            }
-        }
-    }
-    
     header('Location: users.php');
     exit;
 }
@@ -57,7 +30,6 @@ include 'header.php';
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2><i class="fas fa-users"></i> Quản lý người dùng</h2>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="fas fa-plus"></i> Thêm tài khoản</button>
 </div>
 
 <div class="card shadow-sm">
@@ -77,19 +49,27 @@ include 'header.php';
                     <td><span class="badge bg-<?= $u['role'] === 'admin' ? 'danger' : 'info' ?>"><?= $u['role'] === 'admin' ? 'Admin' : 'Khách hàng' ?></span></td>
                     <td><span class="badge bg-<?= $u['status'] === 'active' ? 'success' : 'secondary' ?>"><?= $u['status'] === 'active' ? 'Hoạt động' : 'Đã khóa' ?></span></td>
                     <td>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#userDetailModal" onclick="loadUserDetails(<?= htmlspecialchars(json_encode([
+                            'id' => $u['id'],
+                            'username' => $u['username'],
+                            'fullname' => $u['fullname'],
+                            'email' => $u['email'],
+                            'phone' => $u['phone'],
+                            'address' => $u['address'] ?? '',
+                            'district' => $u['district'] ?? '',
+                            'city' => $u['city'] ?? '',
+                            'role' => $u['role'],
+                            'status' => $u['status'],
+                            'created_at' => $u['created_at'] ?? ''
+                        ])) ?>, 'userDetail')" title="Xem thông tin">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
                         <?php if ($u['id'] != $_SESSION['admin_id']): ?>
                         <form method="POST" style="display:inline">
                             <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
                             <input type="hidden" name="action" value="toggle_lock">
                             <button type="submit" class="btn btn-sm btn-<?= $u['status'] === 'active' ? 'warning' : 'success' ?>" title="<?= $u['status'] === 'active' ? 'Khóa' : 'Mở khóa' ?>">
                                 <i class="fas fa-<?= $u['status'] === 'active' ? 'lock' : 'unlock' ?>"></i>
-                            </button>
-                        </form>
-                        <form method="POST" style="display:inline">
-                            <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                            <input type="hidden" name="action" value="reset_password">
-                            <button type="submit" class="btn btn-sm btn-info btn-delete" title="Reset mật khẩu">
-                                <i class="fas fa-key"></i>
                             </button>
                         </form>
                         <?php endif; ?>
@@ -101,48 +81,94 @@ include 'header.php';
     </div>
 </div>
 
-<!-- Modal thêm user -->
-<div class="modal fade" id="addUserModal" tabindex="-1">
-    <div class="modal-dialog">
+<!-- Modal xem thông tin khách hàng -->
+<div class="modal fade" id="userDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST">
-                <input type="hidden" name="action" value="add">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">Thêm tài khoản</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-user"></i> Thông tin khách hàng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mã KH</label>
+                            <p id="detail_id" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tên đăng nhập</label>
+                            <p id="detail_username" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Họ tên</label>
+                            <p id="detail_fullname" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <p id="detail_email" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Số điện thoại</label>
+                            <p id="detail_phone" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Địa chỉ</label>
+                            <p id="detail_address" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Quận/Huyện</label>
+                            <p id="detail_district" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tỉnh/Thành phố</label>
+                            <p id="detail_city" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Vai trò</label>
+                            <p id="detail_role" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Trạng thái</label>
+                            <p id="detail_status" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ngày tạo</label>
+                            <p id="detail_created_at" class="form-control-plaintext border-bottom pb-2">-</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
-                        <input type="text" name="username" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Họ tên <span class="text-danger">*</span></label>
-                        <input type="text" name="fullname" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Số điện thoại</label>
-                        <input type="tel" name="phone" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Vai trò</label>
-                        <select name="role" class="form-select">
-                            <option value="customer">Khách hàng</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-                    <small class="text-muted">Mật khẩu mặc định: 123456</small>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Thêm</button>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+function loadUserDetails(user, target) {
+    if (target === 'userDetail') {
+        document.getElementById('detail_id').textContent = user.id || '-';
+        document.getElementById('detail_username').textContent = user.username || '-';
+        document.getElementById('detail_fullname').textContent = user.fullname || '-';
+        document.getElementById('detail_email').textContent = user.email || '-';
+        document.getElementById('detail_phone').textContent = user.phone || '-';
+        document.getElementById('detail_address').textContent = user.address || '-';
+        document.getElementById('detail_district').textContent = user.district || '-';
+        document.getElementById('detail_city').textContent = user.city || '-';
+        
+        const roleText = user.role === 'admin' ? '👤 Admin' : '🛍️ Khách hàng';
+        document.getElementById('detail_role').innerHTML = `<span class="badge bg-${user.role === 'admin' ? 'danger' : 'info'}">${roleText}</span>`;
+        
+        const statusText = user.status === 'active' ? 'Hoạt động' : 'Đã khóa';
+        document.getElementById('detail_status').innerHTML = `<span class="badge bg-${user.status === 'active' ? 'success' : 'secondary'}">${statusText}</span>`;
+        
+        document.getElementById('detail_created_at').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : '-';
+    }
+}
+</script>
 
 <?php include 'footer.php'; ?>
