@@ -249,31 +249,48 @@ function uploadImage($file, $dir = null) {
 function getProductImage($image, $product_name = '') {
     // 1. Kiểm tra ảnh từ folder images cục bộ
     if (!empty($product_name)) {
-        // Thử .jpg trước
-        $local_image_jpg = __DIR__ . '/images/' . trim($product_name) . '.jpg';
-        if (file_exists($local_image_jpg)) {
-            $timestamp = filemtime($local_image_jpg);
-            return '/images/' . trim($product_name) . '.jpg?v=' . $timestamp;
+        $name = trim($product_name);
+
+        // Thử trực tiếp trước (trường hợp encoding khớp)
+        foreach (['jpg', 'png', 'jpeg', 'webp'] as $ext) {
+            $path = __DIR__ . '/images/' . $name . '.' . $ext;
+            if (file_exists($path)) {
+                return '/images/' . rawurlencode($name) . '.' . $ext . '?v=' . filemtime($path);
+            }
         }
-        
-        // Thử .png
-        $local_image_png = __DIR__ . '/images/' . trim($product_name) . '.png';
-        if (file_exists($local_image_png)) {
-            $timestamp = filemtime($local_image_png);
-            return '/images/' . trim($product_name) . '.png?v=' . $timestamp;
+
+        // Fallback: quét thư mục và so sánh tên sau khi chuẩn hóa encoding
+        // Quan trọng: fix lỗi NFC/NFD giữa Windows upload và Linux server
+        $normalize = function($str) {
+            if (function_exists('normalizer_normalize')) {
+                return mb_strtolower(normalizer_normalize($str, Normalizer::FORM_C), 'UTF-8');
+            }
+            return mb_strtolower($str, 'UTF-8');
+        };
+
+        $name_normalized = $normalize($name);
+        $files = glob(__DIR__ . '/images/*.{jpg,jpeg,png,webp,gif}', GLOB_BRACE);
+
+        foreach ((array)$files as $file) {
+            $basename = pathinfo($file, PATHINFO_FILENAME);
+            if ($normalize($basename) === $name_normalized) {
+                $filename = basename($file);
+                return '/images/' . rawurlencode($filename) . '?v=' . filemtime($file);
+            }
         }
     }
-    
+
     // 2. Nếu có file upload từ admin, dùng file đó
-    if ($image && file_exists(UPLOAD_DIR . $image)) {
-        $timestamp = filemtime(UPLOAD_DIR . $image);
-        return '/assets/uploads/' . $image . '?v=' . $timestamp;
+    if (!empty($image)) {
+        $upload_path = rtrim(UPLOAD_DIR, '/') . '/' . $image;
+        if (file_exists($upload_path)) {
+            return '/assets/uploads/' . rawurlencode($image) . '?v=' . filemtime($upload_path);
+        }
     }
-    
-    // 3. Fallback: ảnh placeholder generic
+
+    // 3. Fallback placeholder
     return 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22400%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-family=%22Arial%22 font-size=%2224%22 fill=%22%23888%22%3ENo Image%3C/text%3E%3C/svg%3E';
 }
-
 // ============ SANITIZE ============
 
 function clean($data) {

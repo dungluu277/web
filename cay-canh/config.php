@@ -2,10 +2,10 @@
 session_start();
 
 // Database configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'plant_shop');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', 'sql110.infinityfree.com');
+define('DB_NAME', 'if0_41400292_caycanh');
+define('DB_USER', 'if0_41400292');
+define('DB_PASS', 'thanhmtpdepzai');
 
 // Site configuration
 define('SITE_NAME', 'Cây Cảnh Xanh');
