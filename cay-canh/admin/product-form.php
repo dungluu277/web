@@ -145,7 +145,7 @@ include 'header.php';
                     <input type="file" name="image" class="form-control" accept="image/*">
                     <?php if ($product && $product['image']): ?>
                     <div class="mt-2">
-                        <img src="../<?= getProductImage($product['image'], $product['name'] ?? '') ?>" width="100" class="rounded">
+                        <img src="<?= getProductImage($product['image'], $product['name'] ?? '') ?>" width="100" class="rounded">
                     </div>
                     <?php endif; ?>
                 </div>

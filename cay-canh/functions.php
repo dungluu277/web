@@ -253,21 +253,21 @@ function getProductImage($image, $product_name = '') {
         $local_image_jpg = __DIR__ . '/images/' . trim($product_name) . '.jpg';
         if (file_exists($local_image_jpg)) {
             $timestamp = filemtime($local_image_jpg);
-            return 'images/' . trim($product_name) . '.jpg?v=' . $timestamp;
+            return '/images/' . trim($product_name) . '.jpg?v=' . $timestamp;
         }
         
         // Thử .png
         $local_image_png = __DIR__ . '/images/' . trim($product_name) . '.png';
         if (file_exists($local_image_png)) {
             $timestamp = filemtime($local_image_png);
-            return 'images/' . trim($product_name) . '.png?v=' . $timestamp;
+            return '/images/' . trim($product_name) . '.png?v=' . $timestamp;
         }
     }
     
     // 2. Nếu có file upload từ admin, dùng file đó
     if ($image && file_exists(UPLOAD_DIR . $image)) {
         $timestamp = filemtime(UPLOAD_DIR . $image);
-        return 'assets/uploads/' . $image . '?v=' . $timestamp;
+        return '/assets/uploads/' . $image . '?v=' . $timestamp;
     }
     
     // 3. Fallback: ảnh placeholder generic

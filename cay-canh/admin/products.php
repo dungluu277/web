@@ -77,7 +77,7 @@ include 'header.php';
                 <tbody>
                     <?php foreach ($products as $p): ?>
                     <tr>
-                        <td><img src="../<?= getProductImage($p['image'], $p['name']) ?>" width="50" height="50" class="rounded" style="object-fit:cover;"></td>
+                        <td><img src="<?= getProductImage($p['image'], $p['name']) ?>" width="50" height="50" class="rounded" style="object-fit:cover;"></td>
                         <td><code><?= htmlspecialchars($p['code']) ?></code></td>
                         <td><?= htmlspecialchars($p['name']) ?></td>
                         <td><?= htmlspecialchars($p['category_name']) ?></td>

@@ -58,7 +58,7 @@ include 'header.php';
                     <tbody>
                         <?php foreach ($details as $d): ?>
                         <tr>
-                            <td><img src="../<?= getProductImage($d['image'], $d['name']) ?>" width="50" class="rounded"></td>
+                            <td><img src="<?= getProductImage($d['image'], $d['name']) ?>" width="50" class="rounded"></td>
                             <td><?= htmlspecialchars($d['name']) ?> <small class="text-muted">(<?= $d['code'] ?>)</small></td>
                             <td><?= formatPrice($d['unit_price']) ?></td>
                             <td><?= $d['quantity'] ?></td>
